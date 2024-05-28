@@ -13,50 +13,15 @@ type IdeaBank struct {
 	ideas      []Idea
 }
 
-func NewIdeaBank() IdeaBank {
+func NewIdeaBank() *IdeaBank {
 	var nilIdea = Idea{Id: 0, Text: "", Children: []uint{}}
 
-	return IdeaBank{
+	return &IdeaBank{
 		NilIdea:    &nilIdea,
 		ActiveIdea: &nilIdea,
 		nextId:     1,
 		ideas:      []Idea{nilIdea},
 	}
-}
-
-func (ideaBank *IdeaBank) Count() int {
-	return len(ideaBank.ideas)
-}
-
-func (ideaBank *IdeaBank) CreateNewIdea(text string) *Idea {
-	var newIdea = Idea{
-		Id:       ideaBank.nextId,
-		Text:     text,
-		Children: []uint{},
-	}
-	ideaBank.ideas = append(ideaBank.ideas, newIdea)
-	ideaBank.ActiveIdea = &ideaBank.ideas[len(ideaBank.ideas)-1]
-	ideaBank.nextId++
-	return &newIdea
-}
-
-func (ideaBank *IdeaBank) GetIdea(id uint) *Idea {
-	if id >= uint(len(ideaBank.ideas)) {
-		return ideaBank.NilIdea
-	}
-	return &ideaBank.ideas[id]
-}
-
-func (ideaBank *IdeaBank) GetAllIdeas() []Idea {
-	return ideaBank.ideas
-}
-
-func (ideaBank *IdeaBank) SetActiveIdea(id uint) {
-	if id >= uint(len(ideaBank.ideas)) {
-		ideaBank.ActiveIdea = ideaBank.NilIdea
-		return
-	}
-	ideaBank.ActiveIdea = &ideaBank.ideas[id]
 }
 
 func (ideaBank *IdeaBank) AppendChild(text string) {
@@ -67,6 +32,42 @@ func (ideaBank *IdeaBank) AppendChild(text string) {
 	})
 	ideaBank.ActiveIdea.Children = append(ideaBank.ActiveIdea.Children, ideaBank.nextId)
 	ideaBank.nextId++
+}
+
+func (ideaBank *IdeaBank) Count() int {
+	return len(ideaBank.ideas)
+}
+
+func (ideaBank *IdeaBank) CreateIdea(text string) *Idea {
+	var newIdea = Idea{
+		Id:       ideaBank.nextId,
+		Text:     text,
+		Children: []uint{},
+	}
+	ideaBank.ActiveIdea = &newIdea
+	ideaBank.ideas = append(ideaBank.ideas, newIdea)
+	ideaBank.nextId++
+
+	return &newIdea
+}
+
+func (ideaBank *IdeaBank) GetAllIdeas() []Idea {
+	return ideaBank.ideas[0:]
+}
+
+func (ideaBank *IdeaBank) GetIdea(id uint) *Idea {
+	if id >= uint(len(ideaBank.ideas)) {
+		return ideaBank.NilIdea
+	}
+	return &ideaBank.ideas[id]
+}
+
+func (ideaBank *IdeaBank) SetActiveIdea(id uint) {
+	if id >= uint(len(ideaBank.ideas)) {
+		ideaBank.ActiveIdea = ideaBank.NilIdea
+		return
+	}
+	ideaBank.ActiveIdea = &ideaBank.ideas[id]
 }
 
 func (ideaBank *IdeaBank) SwapChildren(firstChildIndex uint, secondChildIndex uint) {

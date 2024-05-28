@@ -13,8 +13,8 @@ func TestCreatesAndInteractsWithNewIdea(t *testing.T) {
 	//
 	// Create new ideas
 	//
-	var firstIdea = ideaBank.CreateNewIdea("first idea")
-	var secondIdea = ideaBank.CreateNewIdea("second idea")
+	var firstIdea = ideaBank.CreateIdea("first idea")
+	var secondIdea = ideaBank.CreateIdea("second idea")
 
 	if firstIdea.Id == secondIdea.Id {
 		t.Fatalf("Expected different ids, but got %d and %d", firstIdea.Id, secondIdea.Id)
