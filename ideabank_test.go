@@ -42,6 +42,9 @@ func TestCreatesAndInteractsWithNewIdea(t *testing.T) {
 	if ideaBank.Count() != countBefore+2 {
 		t.Fatalf("Expected children to be added for %d total ideas, got %d", countBefore+2, ideaBank.Count())
 	}
+	if ideaBank.ActiveIdea.Text != "second idea" {
+		t.Fatalf("Expected ActiveIdea to not change when children are appended, got %s", ideaBank.ActiveIdea.Text)
+	}
 	if len(ideaBank.ActiveIdea.Children) != 2 {
 		t.Fatalf("Expected ActiveIdea to have 2 children, got %d", len(ideaBank.ActiveIdea.Children))
 	}
@@ -52,6 +55,20 @@ func TestCreatesAndInteractsWithNewIdea(t *testing.T) {
 		t.Fatalf("Expected first child to have text %s, got %s", firstChildText, firstChild.Text)
 	}
 	if secondChild.Text != secondChildText {
+		t.Fatalf("Expected second child to have text %s, got %s", secondChildText, secondChild.Text)
+	}
+
+	//
+	// Re-ordering
+	//
+	ideaBank.SwapChildren(0, 1)
+
+	var newFirstChild = ideaBank.GetIdea(ideaBank.ActiveIdea.Children[0])
+	var newSecondChild = ideaBank.GetIdea(ideaBank.ActiveIdea.Children[1])
+	if newFirstChild.Text != secondChildText {
+		t.Fatalf("Expected first child to have text %s, got %s", firstChildText, firstChild.Text)
+	}
+	if newSecondChild.Text != firstChildText {
 		t.Fatalf("Expected second child to have text %s, got %s", secondChildText, secondChild.Text)
 	}
 }

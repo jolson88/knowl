@@ -56,3 +56,16 @@ func (ideaBank *IdeaBank) AppendChild(text string) {
 	ideaBank.ActiveIdea.Children = append(ideaBank.ActiveIdea.Children, ideaBank.nextId)
 	ideaBank.nextId++
 }
+
+func (ideaBank *IdeaBank) SwapChildren(firstChildIndex uint, secondChildIndex uint) {
+	var childrenCount = uint(len(ideaBank.ActiveIdea.Children))
+	if firstChildIndex >= childrenCount || secondChildIndex >= childrenCount {
+		return
+	}
+
+	var firstChildId = ideaBank.ActiveIdea.Children[firstChildIndex]
+	var secondChildId = ideaBank.ActiveIdea.Children[secondChildIndex]
+
+	ideaBank.ActiveIdea.Children[firstChildIndex] = secondChildId
+	ideaBank.ActiveIdea.Children[secondChildIndex] = firstChildId
+}
