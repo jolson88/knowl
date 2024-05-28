@@ -26,7 +26,7 @@ func TestCreatesAndInteractsWithNewIdea(t *testing.T) {
 		t.Fatalf("Expected ActiveIdea to not be nil")
 	}
 	if ideaBank.ActiveIdea.Text != "second idea" {
-		t.Fatalf("Expected ActiveIdea to have text 'second idea', got %s", ideaBank.ActiveIdea.Text)
+		t.Fatalf("Expected ActiveIdea to have text 'second idea', got '%s'", ideaBank.ActiveIdea.Text)
 	}
 
 	//
@@ -39,11 +39,12 @@ func TestCreatesAndInteractsWithNewIdea(t *testing.T) {
 	ideaBank.AppendChild(firstChildText)
 	ideaBank.AppendChild(secondChildText)
 
-	if ideaBank.Count() != countBefore+2 {
-		t.Fatalf("Expected children to be added for %d total ideas, got %d", countBefore+2, ideaBank.Count())
+	var allIdeas = ideaBank.GetAllIdeas()
+	if len(allIdeas) != countBefore+2 {
+		t.Fatalf("Expected children to be added for %d total ideas, got %d", countBefore+2, len(allIdeas))
 	}
 	if ideaBank.ActiveIdea.Text != "second idea" {
-		t.Fatalf("Expected ActiveIdea to not change when children are appended, got %s", ideaBank.ActiveIdea.Text)
+		t.Fatalf("Expected ActiveIdea to not change when children are appended, got '%s'", ideaBank.ActiveIdea.Text)
 	}
 	if len(ideaBank.ActiveIdea.Children) != 2 {
 		t.Fatalf("Expected ActiveIdea to have 2 children, got %d", len(ideaBank.ActiveIdea.Children))
@@ -52,10 +53,10 @@ func TestCreatesAndInteractsWithNewIdea(t *testing.T) {
 	var firstChild = ideaBank.GetIdea(ideaBank.ActiveIdea.Children[0])
 	var secondChild = ideaBank.GetIdea(ideaBank.ActiveIdea.Children[1])
 	if firstChild.Text != firstChildText {
-		t.Fatalf("Expected first child to have text %s, got %s", firstChildText, firstChild.Text)
+		t.Fatalf("Expected first child to have text '%s', got '%s'", firstChildText, firstChild.Text)
 	}
 	if secondChild.Text != secondChildText {
-		t.Fatalf("Expected second child to have text %s, got %s", secondChildText, secondChild.Text)
+		t.Fatalf("Expected second child to have text '%s', got '%s'", secondChildText, secondChild.Text)
 	}
 
 	//
@@ -66,9 +67,18 @@ func TestCreatesAndInteractsWithNewIdea(t *testing.T) {
 	var newFirstChild = ideaBank.GetIdea(ideaBank.ActiveIdea.Children[0])
 	var newSecondChild = ideaBank.GetIdea(ideaBank.ActiveIdea.Children[1])
 	if newFirstChild.Text != secondChildText {
-		t.Fatalf("Expected first child to have text %s, got %s", firstChildText, firstChild.Text)
+		t.Fatalf("Expected first child to have text '%s', got '%s'", firstChildText, firstChild.Text)
 	}
 	if newSecondChild.Text != firstChildText {
-		t.Fatalf("Expected second child to have text %s, got %s", secondChildText, secondChild.Text)
+		t.Fatalf("Expected second child to have text '%s', got '%s'", secondChildText, secondChild.Text)
+	}
+
+	//
+	// Idea Activation
+	//
+	ideaBank.SetActiveIdea(firstIdea.Id)
+
+	if ideaBank.ActiveIdea.Text != "first idea" {
+		t.Fatalf("Expected ActiveIdea to be 'first idea', got '%s'", ideaBank.ActiveIdea.Text)
 	}
 }

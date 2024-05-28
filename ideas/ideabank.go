@@ -47,6 +47,18 @@ func (ideaBank *IdeaBank) GetIdea(id uint) *Idea {
 	return &ideaBank.ideas[id]
 }
 
+func (ideaBank *IdeaBank) GetAllIdeas() []Idea {
+	return ideaBank.ideas
+}
+
+func (ideaBank *IdeaBank) SetActiveIdea(id uint) {
+	if id >= uint(len(ideaBank.ideas)) {
+		ideaBank.ActiveIdea = ideaBank.NilIdea
+		return
+	}
+	ideaBank.ActiveIdea = &ideaBank.ideas[id]
+}
+
 func (ideaBank *IdeaBank) AppendChild(text string) {
 	ideaBank.ideas = append(ideaBank.ideas, Idea{
 		Id:       ideaBank.nextId,
