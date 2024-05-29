@@ -30,8 +30,12 @@ func main() {
 					fmt.Println(string(command))
 				}
 			case "ls":
+				var visited = make(map[uint]bool)
 				for _, idea := range ideaBank.GetAllIdeas() {
 					if idea.Id == ideaBank.NilIdea.Id {
+						continue
+					}
+					if visited[idea.Id] {
 						continue
 					}
 
@@ -39,6 +43,12 @@ func main() {
 						fmt.Printf("*[%d] %s\n", idea.Id, idea.Text)
 					} else {
 						fmt.Printf("[%d] %s\n", idea.Id, idea.Text)
+					}
+					visited[idea.Id] = true
+
+					for _, childId := range idea.Children {
+						fmt.Printf("    - [%d] %s\n", childId, ideaBank.GetIdea(childId).Text)
+						visited[childId] = true
 					}
 				}
 			default:
