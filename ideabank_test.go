@@ -22,12 +22,6 @@ func TestCreatesAndInteractsWithNewIdea(t *testing.T) {
 	if ideaBank.Count() != countBefore+2 {
 		t.Fatalf("Expected %d ideas, got %d", countBefore+2, ideaBank.Count())
 	}
-	if ideaBank.ActiveIdea == nil {
-		t.Fatalf("Expected ActiveIdea to not be nil")
-	}
-	if ideaBank.ActiveIdea.Text != "second idea" {
-		t.Fatalf("Expected ActiveIdea to have text 'second idea', got '%s'", ideaBank.ActiveIdea.Text)
-	}
 
 	//
 	// Append Children
@@ -36,81 +30,56 @@ func TestCreatesAndInteractsWithNewIdea(t *testing.T) {
 
 	const firstChildText = "first child"
 	const secondChildText = "second child"
-	ideaBank.AppendChild(firstChildText)
-	ideaBank.AppendChild(secondChildText)
+	firstChild := ideaBank.CreateChild(firstIdea.Id, firstChildText)
+	secondChild := ideaBank.CreateChild(firstIdea.Id, secondChildText)
 
-	var allIdeas = ideaBank.GetAllIdeas()
-	if len(allIdeas) != countBefore+2 {
-		t.Fatalf("Expected children to be added for %d total ideas, got %d", countBefore+2, len(allIdeas))
-	}
-	if ideaBank.ActiveIdea.Text != "second idea" {
-		t.Fatalf("Expected ActiveIdea to not change when children are appended, got '%s'", ideaBank.ActiveIdea.Text)
-	}
-	if len(ideaBank.ActiveIdea.Children) != 2 {
-		t.Fatalf("Expected ActiveIdea to have 2 children, got %d", len(ideaBank.ActiveIdea.Children))
-	}
-
-	var firstChild = ideaBank.GetIdea(ideaBank.ActiveIdea.Children[0])
-	var secondChild = ideaBank.GetIdea(ideaBank.ActiveIdea.Children[1])
-	if firstChild.Text != firstChildText {
-		t.Fatalf("Expected first child to have text '%s', got '%s'", firstChildText, firstChild.Text)
-	}
-	if secondChild.Text != secondChildText {
-		t.Fatalf("Expected second child to have text '%s', got '%s'", secondChildText, secondChild.Text)
+	countAfter := ideaBank.Count()
+	if countAfter != countBefore+2 {
+		t.Fatalf("Expected children to be added for %d total ideas, got %d", countBefore+2, countAfter)
 	}
 
 	//
 	// Re-ordering
 	//
-	ideaBank.SwapChildren(0, 1)
+	ideaBank.MoveChild(firstIdea.Id, 1, -1)
 
-	var newFirstChild = ideaBank.GetIdea(ideaBank.ActiveIdea.Children[0])
-	var newSecondChild = ideaBank.GetIdea(ideaBank.ActiveIdea.Children[1])
+	var newFirstChild = ideaBank.GetIdea(firstIdea.Children[0])
+	var newSecondChild = ideaBank.GetIdea(firstIdea.Children[1])
 	if newFirstChild.Text != secondChildText {
 		t.Fatalf("Expected first child to have text '%s', got '%s'", firstChildText, firstChild.Text)
 	}
 	if newSecondChild.Text != firstChildText {
 		t.Fatalf("Expected second child to have text '%s', got '%s'", secondChildText, secondChild.Text)
 	}
-
-	//
-	// Idea Activation
-	//
-	ideaBank.SetActiveIdea(firstIdea.Id)
-
-	if ideaBank.ActiveIdea.Text != "first idea" {
-		t.Fatalf("Expected ActiveIdea to be 'first idea', got '%s'", ideaBank.ActiveIdea.Text)
-	}
 }
 
 func TestLogsAndReloads(t *testing.T) {
 	ideaBank := ideas.NewIdeaBank()
-	ideaBank.CreateIdea("P1")
-	ideaBank.CreateIdea("P2")
-	ideaBank.AppendChild("P2-C1")
-	ideaBank.AppendChild("P2-C2")
-	ideaBank.SwapChildren(0, 1)
-	ideaBank.SetActiveIdea(1)
-	ideaBank.AppendChild("P1-C1")
+	firstIdea := ideaBank.CreateIdea("P1")
+	secondIdea := ideaBank.CreateIdea("P2")
+	ideaBank.CreateChild(secondIdea.Id, "P2-C1")
+	ideaBank.CreateChild(secondIdea.Id, "P2-C2")
+	ideaBank.MoveChild(secondIdea.Id, 1, -1)
+	ideaBank.CreateChild(firstIdea.Id, "P1-C1")
 
-	var log = ideaBank.CommandLog()
+	log := ideaBank.CommandLog()
 	restoredIdeaBank := ideas.NewIdeaBankFromCommandLog(log)
 	if restoredIdeaBank.Count() != ideaBank.Count() {
 		t.Fatalf("Expected restored idea bank to have %d ideas, got %d", ideaBank.Count(), restoredIdeaBank.Count())
 	}
 
-	var originalIdeas = ideaBank.GetAllIdeas()
-	var restoredIdeas = restoredIdeaBank.GetAllIdeas()
+	var originalIdeas = ideaBank.AllIdeas()
 	for i, originalIdea := range originalIdeas {
-		if originalIdea.Text != restoredIdeas[i].Text {
-			t.Fatalf("Expected restored idea at index %d to have text '%s', got '%s'", i, originalIdea.Text, restoredIdeas[i].Text)
+		restoredIdea := restoredIdeaBank.GetIdea(originalIdea.Id)
+		if originalIdea.Text != restoredIdea.Text {
+			t.Fatalf("Expected restored idea at index %d to have text '%s', got '%s'", i, originalIdea.Text, restoredIdea.Text)
 		}
-		if len(originalIdea.Children) != len(restoredIdeas[i].Children) {
-			t.Fatalf("Expected restored idea at index %d to have %d children, got %d", i, len(originalIdea.Children), len(restoredIdeas[i].Children))
+		if len(originalIdea.Children) != len(restoredIdea.Children) {
+			t.Fatalf("Expected restored idea at index %d to have %d children, got %d", i, len(originalIdea.Children), len(restoredIdea.Children))
 		}
 		for j, originalChild := range originalIdea.Children {
-			if originalChild != restoredIdeas[i].Children[j] {
-				t.Fatalf("Expected restored idea at index %d to have child %d be %d, got %d", i, j, originalChild, restoredIdeas[i].Children[j])
+			if originalChild != restoredIdea.Children[j] {
+				t.Fatalf("Expected restored idea at index %d to have child %d be %d, got %d", i, j, originalChild, restoredIdea.Children[j])
 			}
 		}
 	}

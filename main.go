@@ -10,6 +10,7 @@ import (
 )
 
 func main() {
+	activeId := ideas.IdeaId(0)
 	ideaBank := ideas.NewIdeaBank()
 	scanner := bufio.NewScanner(os.Stdin)
 
@@ -23,15 +24,28 @@ func main() {
 
 			words := strings.SplitN(input, " ", 2)
 			command := words[0]
+			commandInput := ""
+			if len(words) > 1 {
+				commandInput = words[1]
+			}
 
 			switch command {
+
+			case "+":
+				if commandInput == "" {
+					fmt.Println("Usage: + <text>")
+					continue
+				}
+				activeId = ideaBank.CreateIdea(commandInput).Id
+
 			case "log":
 				for _, command := range ideaBank.CommandLog() {
 					fmt.Println(string(command))
 				}
+
 			case "ls":
-				var visited = make(map[uint]bool)
-				for _, idea := range ideaBank.GetAllIdeas() {
+				visited := make(map[ideas.IdeaId]bool)
+				for _, idea := range ideaBank.AllIdeas() {
 					if idea.Id == ideaBank.NilIdea.Id {
 						continue
 					}
@@ -39,7 +53,7 @@ func main() {
 						continue
 					}
 
-					if idea.Id == ideaBank.ActiveIdea.Id {
+					if idea.Id == activeId {
 						fmt.Printf("*[%d] %s\n", idea.Id, idea.Text)
 					} else {
 						fmt.Printf("[%d] %s\n", idea.Id, idea.Text)
@@ -51,8 +65,9 @@ func main() {
 						visited[childId] = true
 					}
 				}
+
 			default:
-				ideaBank.InterpretCommand([]byte(input))
+				fmt.Println("Unknown command:", command)
 			}
 		} else {
 			break
