@@ -82,3 +82,36 @@ func TestCreatesAndInteractsWithNewIdea(t *testing.T) {
 		t.Fatalf("Expected ActiveIdea to be 'first idea', got '%s'", ideaBank.ActiveIdea.Text)
 	}
 }
+
+func TestLogsAndReloads(t *testing.T) {
+	ideaBank := ideas.NewIdeaBank()
+	ideaBank.CreateIdea("P1")
+	ideaBank.CreateIdea("P2")
+	ideaBank.AppendChild("P2-C1")
+	ideaBank.AppendChild("P2-C2")
+	ideaBank.SwapChildren(0, 1)
+	ideaBank.SetActiveIdea(1)
+	ideaBank.AppendChild("P1-C1")
+
+	var log = ideaBank.CommandLog()
+	restoredIdeaBank := ideas.NewIdeaBankFromCommandLog(log)
+	if restoredIdeaBank.Count() != ideaBank.Count() {
+		t.Fatalf("Expected restored idea bank to have %d ideas, got %d", ideaBank.Count(), restoredIdeaBank.Count())
+	}
+
+	var originalIdeas = ideaBank.GetAllIdeas()
+	var restoredIdeas = restoredIdeaBank.GetAllIdeas()
+	for i, originalIdea := range originalIdeas {
+		if originalIdea.Text != restoredIdeas[i].Text {
+			t.Fatalf("Expected restored idea at index %d to have text '%s', got '%s'", i, originalIdea.Text, restoredIdeas[i].Text)
+		}
+		if len(originalIdea.Children) != len(restoredIdeas[i].Children) {
+			t.Fatalf("Expected restored idea at index %d to have %d children, got %d", i, len(originalIdea.Children), len(restoredIdeas[i].Children))
+		}
+		for j, originalChild := range originalIdea.Children {
+			if originalChild != restoredIdeas[i].Children[j] {
+				t.Fatalf("Expected restored idea at index %d to have child %d be %d, got %d", i, j, originalChild, restoredIdeas[i].Children[j])
+			}
+		}
+	}
+}

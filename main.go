@@ -10,9 +10,7 @@ import (
 )
 
 func main() {
-	activeId := uint(0)
-	nextId := uint(0)
-	ideaMap := make(map[uint]ideas.Idea)
+	ideaBank := ideas.NewIdeaBank()
 	scanner := bufio.NewScanner(os.Stdin)
 
 	for {
@@ -25,28 +23,26 @@ func main() {
 
 			words := strings.SplitN(input, " ", 2)
 			command := words[0]
-			commandInput := ""
-			if len(words) > 1 {
-				commandInput = strings.Join(words[1:], " ")
-			}
 
-			if command == "new" {
-				ideaMap[nextId] = ideas.Idea{
-					Id:       nextId,
-					Text:     strings.Trim(commandInput, " "),
-					Children: []uint{},
+			switch command {
+			case "log":
+				for _, command := range ideaBank.CommandLog() {
+					fmt.Println(string(command))
 				}
-				activeId = nextId
-				nextId++
-			} else if command == "list" {
-				for k, idea := range ideaMap {
-					if k == activeId {
-						fmt.Print("* ")
+			case "ls":
+				for _, idea := range ideaBank.GetAllIdeas() {
+					if idea.Id == ideaBank.NilIdea.Id {
+						continue
 					}
-					fmt.Printf("[%d] %s\n", k, idea.Text)
+
+					if idea.Id == ideaBank.ActiveIdea.Id {
+						fmt.Printf("*[%d] %s\n", idea.Id, idea.Text)
+					} else {
+						fmt.Printf("[%d] %s\n", idea.Id, idea.Text)
+					}
 				}
-			} else {
-				fmt.Println("Unknown command:", command)
+			default:
+				ideaBank.InterpretCommand([]byte(input))
 			}
 		} else {
 			break
