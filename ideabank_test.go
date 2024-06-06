@@ -51,6 +51,19 @@ func TestCreatesAndInteractsWithNewIdea(t *testing.T) {
 	if newSecondChild.Text != firstChildText {
 		t.Fatalf("Expected second child to have text '%s', got '%s'", secondChildText, secondChild.Text)
 	}
+
+	//
+	// References
+	//
+	secondIdea = ideaBank.AddReference(secondIdea.Id, firstIdea.Id)
+	if len(secondIdea.References) != 1 {
+		t.Fatalf("Expected second idea to have 1 reference, got %d", len(secondIdea.References))
+	}
+
+	secondIdea = ideaBank.AddReference(secondIdea.Id, firstIdea.Id)
+	if len(secondIdea.References) != 1 {
+		t.Fatalf("Expected to not have duplicate added, but found %d references", len(secondIdea.References))
+	}
 }
 
 func TestLogsAndReloads(t *testing.T) {
@@ -60,7 +73,8 @@ func TestLogsAndReloads(t *testing.T) {
 	ideaBank.CreateChild(secondIdea.Id, "P2-C1")
 	ideaBank.CreateChild(secondIdea.Id, "P2-C2")
 	ideaBank.MoveChild(secondIdea.Id, 1, -1)
-	ideaBank.CreateChild(firstIdea.Id, "P1-C1")
+	childIdea := ideaBank.CreateChild(firstIdea.Id, "P1-C1")
+	ideaBank.AddReference(childIdea.Id, secondIdea.Id)
 
 	log := ideaBank.CommandLog()
 	restoredIdeaBank := ideas.NewIdeaBankFromCommandLog(log)
@@ -80,6 +94,14 @@ func TestLogsAndReloads(t *testing.T) {
 		for j, originalChild := range originalIdea.Children {
 			if originalChild != restoredIdea.Children[j] {
 				t.Fatalf("Expected restored idea at index %d to have child %d be %d, got %d", i, j, originalChild, restoredIdea.Children[j])
+			}
+		}
+		if len(originalIdea.References) != len(restoredIdea.References) {
+			t.Fatalf("Expected restored idea at index %d to have %d references, got %d", i, len(originalIdea.References), len(restoredIdea.References))
+		}
+		for j, originalReference := range originalIdea.References {
+			if originalReference != restoredIdea.References[j] {
+				t.Fatalf("Expected restored idea at index %d to have reference %d be %d, got %d", i, j, originalReference, restoredIdea.References[j])
 			}
 		}
 	}

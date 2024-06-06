@@ -6,21 +6,24 @@ import (
 )
 
 var commands = struct {
-	CreateChild string
-	CreateNew   string
-	MoveChild   string
+	AddReference string
+	CreateChild  string
+	CreateNew    string
+	MoveChild    string
 }{
-	CreateChild: "cc",
-	CreateNew:   "cn",
-	MoveChild:   "mc",
+	AddReference: "ar",
+	CreateChild:  "cc",
+	CreateNew:    "cn",
+	MoveChild:    "mc",
 }
 
 type IdeaId uint
 
 type Idea struct {
-	Id       IdeaId
-	Text     string
-	Children []IdeaId
+	Id         IdeaId
+	Text       string
+	Children   []IdeaId
+	References []IdeaId
 }
 
 type IdeaBank struct {
@@ -64,6 +67,28 @@ func (ideaBank *IdeaBank) CommandLog() [][]byte {
 
 func (ideaBank *IdeaBank) Count() int {
 	return len(ideaBank.ideas)
+}
+
+func (ideaBank *IdeaBank) AddReference(ideaId IdeaId, referenceId IdeaId) *Idea {
+	idea := ideaBank.ideas[ideaId]
+	if idea == nil || idea.Id == 0 {
+		return nil
+	}
+
+	referenceExists := false
+	for _, existingReferenceId := range idea.References {
+		if existingReferenceId == referenceId {
+			referenceExists = true
+			break
+		}
+	}
+
+	if !referenceExists {
+		idea.References = append(idea.References, referenceId)
+		ideaBank.commandLog = append(ideaBank.commandLog, []byte(fmt.Sprintf("%s %d %d", commands.AddReference, ideaId, referenceId)))
+	}
+
+	return idea
 }
 
 func (ideaBank *IdeaBank) CreateChild(parentId IdeaId, text string) *Idea {
@@ -110,6 +135,12 @@ func (ideaBank *IdeaBank) interpretCommand(commandBytes []byte) {
 	}
 
 	switch commandName {
+	case commands.AddReference:
+		var ideaId IdeaId
+		var referenceId IdeaId
+		fmt.Sscanf(commandInput, "%d %d", &ideaId, &referenceId)
+		ideaBank.AddReference(ideaId, referenceId)
+
 	case commands.CreateChild:
 		var parentId IdeaId
 		var text string
